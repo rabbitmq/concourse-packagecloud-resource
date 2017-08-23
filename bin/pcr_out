@@ -9,7 +9,7 @@ if ARGV.length < 1
 end
 
 def get_version(distribution, package_file)
-    "#{distribution}/#{package_file}"
+    {filename: "#{distribution}/#{package_file}"}
 end
 
 def distributions()
