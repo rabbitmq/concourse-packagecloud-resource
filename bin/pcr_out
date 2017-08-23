@@ -38,7 +38,7 @@ params = request.fetch("params")
 
 username = source.fetch("username")
 api_key = source.fetch("api_key")
-package_name = source.fetch("package_name")
+repo = source.fetch("repo")
 
 distribution_name = params.fetch("distribution_name")
 package_file_glob = params.fetch("package_file_glob")
@@ -63,7 +63,7 @@ credentials = Packagecloud::Credentials.new(username, api_key)
 
 package = Packagecloud::Package.new(:file => package_file_location)
 
-result = @client.put_package(package_name, package, distribution)
+result = @client.put_package(repo, package, distribution)
 
 version = get_version(distribution, package_file)
 
@@ -74,7 +74,7 @@ if result.succeeded
             {name: "Filename",
              value: package_file},
             {name: "Package link",
-             value: "https://packagecloud.io/#{username}/#{package_name}/packages/#{distribution}/#{package_file}"}
+             value: "https://packagecloud.io/#{username}/#{repo}/packages/#{distribution}/#{package_file}"}
         ]})
 else
     STDERR.puts result.inspect
