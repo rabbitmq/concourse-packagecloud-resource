@@ -3,6 +3,11 @@
 require 'packagecloud'
 require 'json'
 
+def fail_with(msg)
+    STDERR.puts msg
+    exit 1
+end
+
 def get_link(username, repo, distribution, package_file)
     "https://packagecloud.io/#{username}/#{repo}/packages/#{distribution}/#{package_file}"
 end
@@ -12,9 +17,17 @@ def distributions()
         "debian-jessie" => "debian/jessie",
         "debian-wheezy" => "debian/wheezy",
         "debian-stretch" => "debian/stretch",
+        "ubuntu-12.04" => "ubuntu/precise",
+        "ubuntu-12.10" => "ubuntu/quantal",
+        "ubuntu-13.04" => "ubuntu/raring",
+        "ubuntu-13.10" => "ubuntu/saucy",
         "ubuntu-14.04" => "ubuntu/trusty",
+        "ubuntu-14.10" => "ubuntu/utopic",
+        "ubuntu-15.04" => "ubuntu/vivid",
+        "ubuntu-15.10" => "ubuntu/wily",
         "ubuntu-16.04" => "ubuntu/xenial",
         "ubuntu-16.10" => "ubuntu/yakkety",
+        "ubuntu-17.04" => "ubuntu/zesty",
         "centos-6" => "el/6",
         "fedora-24" => "fedora/24",
         "fedora-25" => "fedora/25",
@@ -33,15 +46,21 @@ def make_package(package_file_location)
     Packagecloud::Package.new(:file => package_file_location)
 end
 
-def print_version(client, repo, distribution, package_file_location)
+def gen_version(client, repo, distribution, package_file_location)
     package_file = File.basename(package_file_location)
     link = get_link(client.credentials.username, repo, distribution, package_file)
-    STDOUT.puts JSON.generate({
+    JSON.generate({
         version: {package: link},
         metadata: [
             {name: "Filename", value: package_file},
             {name: "Package link", value: link}
         ]})
+end
+
+def print_version_and_exit(client, repo, distribution, package_file_location)
+    version = gen_version(client, repo, distribution, package_file_location)
+    STDOUT.puts version
+    exit
 end
 
 def publish_package(client, repo, package_file_location, distribution, override, attempts)
@@ -50,25 +69,24 @@ def publish_package(client, repo, package_file_location, distribution, override,
     result = client.put_package(repo, package, distribution)
 
     if result.succeeded
-        print_version(client, repo, distribution, package_file_location)
+        print_version_and_exit(client, repo, distribution, package_file_location)
     else
         response_content = JSON.parse(result.response)
         if response_content["filename"] == ["has already been taken"]
             if override
                 override_package(client, repo, package_file_location, distribution, override, attempts)
             else
-                print_version(client, repo, distribution, package_file_location)
+                print_version_and_exit(client, repo, distribution, package_file_location)
             end
         else
-            STDERR.puts result.inspect
-            exit 1
+            fail_with(result.inspect)
         end
     end
 end
 
 def override_package(client, repo, package_file_location, distribution, override, attempts)
     if attempts == 0
-        STDERR.puts "Unable to override the package. No more attempts left"
+        fail_with("Unable to override the package. No more attempts left")
     end
     distribution_parts = distribution.split("/")
     distro_name = distribution_parts[0]
@@ -83,8 +101,7 @@ def override_package(client, repo, package_file_location, distribution, override
 end
 
 if ARGV.length < 1
-  STDERR.puts 'Too few arguments'
-  exit 1
+  fail_with("Too few arguments")
 end
 
 work_dir = ARGV[0]
@@ -105,15 +122,13 @@ override = params.fetch("override", false)
 distribution = distributions[distribution_name]
 
 if distribution == nil
-    STDERR.puts "Distribution name not supported: #{distribution_name}"
-    exit 1
+    fail_with("Distribution name not supported: #{distribution_name}")
 end
 
 package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
 
 if package_file_location == nil or not File.exists?(package_file_location)
-    STDERR.puts "Package file #{package_file_glob} not found in directory #{work_dir}"
-    exit 1
+    fail_with("Package file #{package_file_glob} not found in directory #{work_dir}")
 end
 
 client = make_client(username, api_key)
