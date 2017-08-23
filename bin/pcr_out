@@ -115,7 +115,7 @@ username = source.fetch("username")
 api_key = source.fetch("api_key")
 repo = source.fetch("repo")
 
-distribution_name = params.fetch("distribution_name")
+distribution_name = params.fetch("distribution_name", source.fetch("distribution_name"))
 package_file_glob = params.fetch("package_file_glob")
 override = params.fetch("override", false)
 

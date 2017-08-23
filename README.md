@@ -20,20 +20,7 @@ which are used as `check`, `in` and `out` commands for the resource.
 - username: Package cloud username
 - api_key: Package cloud api token
 - repo: Package cloud repo name
-
-### Behaviour
-
-#### `check`: Does nothing.
-
-#### `in`: Does nothing.
-
-#### `out`: Publishes a package to package cloud
-
-
-##### Parameters
-
-- distribution_name: a name of distribution.
-- package_file_glob: a glob pattern for the package file.
+- distribution_name: *Optional* a name of distribution. Can be overriden by the same configuration in `out` params.
 
 Distribution name can be one of:
 
@@ -57,6 +44,21 @@ Distribution name can be one of:
 - fedora-26
 - centos-7
 - opensuse-leap-42.2
+
+### Behaviour
+
+#### `check`: Does nothing.
+
+#### `in`: Does nothing.
+
+#### `out`: Publishes a package to package cloud
+
+
+##### Parameters
+
+- package_file_glob: a glob pattern for the package file.
+- distribution_name: *Optional* a name of distribution. Overrides the source configuration.
+
 
 
 
