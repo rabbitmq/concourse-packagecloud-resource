@@ -50,12 +50,14 @@ if distribution == nil
     exit 1
 end
 
-package_file_location = Dir.glob([File.join(work_dir, package_file)]).first
+package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
 
 if package_file_location == nil or not File.exists?(package_file_location)
     STDERR.puts "Package file #{package_file_glob} not found in directory #{work_dir}"
     exit 1
 end
+
+package_file = File.basename(package_file_location)
 
 credentials = Packagecloud::Credentials.new(username, api_key)
 
