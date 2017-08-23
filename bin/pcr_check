@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDERR.puts "The 'check' action is not defined"
+puts "[]"

@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+require 'packagecloud'
+require 'json'
+
+if ARGV.length < 1
+  STDERR.puts 'Too few arguments'
+  exit 1
+end
+
+def get_version(distribution, package_file)
+    "#{distribution}/#{package_file}"
+end
+
+work_dir = ARGV[0]
+
+request = JSON.parse(STDIN.read)
+
+source = request.fetch("source")
+params = request.fetch("params")
+
+username = source.fetch("username")
+api_key = source.fetch("api_key")
+package_name = source.fetch("package_name")
+
+distribution = params.fetch("distribution")
+package_file = params.fetch("package_file")
+
+package_file_location = File.join(work_dir, package_file)
+
+if not File.exists?(package_file_location)
+    STDERR.puts "Package file #{package_file_location} not found"
+    exit 1
+end
+
+credentials = Packagecloud::Credentials.new(username, api_key)
+
+@client = Packagecloud::Client.new(credentials)
+
+package = Packagecloud::Package.new(:file => package_file_location)
+
+result = @client.put_package(package_name, package, distribution)
+
+version = get_version(distribution, package_file)
+
+if result.succeeded
+  puts JSON.generate({
+    version: version,
+    metadata: [
+        {name: "Filename",
+         value: package_file},
+        {name: "Package link",
+         value: "https://packagecloud.io/#{username}/#{package_name}/packages/#{distribution}/#{package_file}"}
+    ]})
+else
+  STDERR.puts result.inspect
+  exit 1
+end
+

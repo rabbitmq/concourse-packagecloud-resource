@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+STDERR.puts "The 'in' action is not defined"
+exit 1
