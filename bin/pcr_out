@@ -8,8 +8,8 @@ if ARGV.length < 1
   exit 1
 end
 
-def get_version(distribution, package_file)
-    {filename: "#{distribution}/#{package_file}"}
+def get_link(username, repo, distribution, package_file)
+    "https://packagecloud.io/#{username}/#{repo}/packages/#{distribution}/#{package_file}"
 end
 
 def distributions()
@@ -67,16 +67,14 @@ package = Packagecloud::Package.new(:file => package_file_location)
 
 result = @client.put_package(repo, package, distribution)
 
-version = get_version(distribution, package_file)
+link = get_link(username, repo, distribution, package_file)
 
 if result.succeeded
     STDOUT.puts JSON.generate({
-        version: version,
+        version: {package: link},
         metadata: [
-            {name: "Filename",
-             value: package_file},
-            {name: "Package link",
-             value: "https://packagecloud.io/#{username}/#{repo}/packages/#{distribution}/#{package_file}"}
+            {name: "Filename", value: package_file},
+            {name: "Package link", value: link}
         ]})
 else
     STDERR.puts result.inspect
