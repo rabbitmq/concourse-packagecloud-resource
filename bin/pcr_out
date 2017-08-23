@@ -3,11 +3,6 @@
 require 'packagecloud'
 require 'json'
 
-if ARGV.length < 1
-  STDERR.puts 'Too few arguments'
-  exit 1
-end
-
 def get_link(username, repo, distribution, package_file)
     "https://packagecloud.io/#{username}/#{repo}/packages/#{distribution}/#{package_file}"
 end
@@ -29,6 +24,69 @@ def distributions()
     }
 end
 
+def make_client(username, api_key)
+    credentials = Packagecloud::Credentials.new(username, api_key)
+    Packagecloud::Client.new(credentials)
+end
+
+def make_package(package_file_location)
+    Packagecloud::Package.new(:file => package_file_location)
+end
+
+def print_version(client, repo, distribution, package_file_location)
+    package_file = File.basename(package_file_location)
+    link = get_link(client.credentials.username, repo, distribution, package_file)
+    STDOUT.puts JSON.generate({
+        version: {package: link},
+        metadata: [
+            {name: "Filename", value: package_file},
+            {name: "Package link", value: link}
+        ]})
+end
+
+def publish_package(client, repo, package_file_location, distribution, override, attempts)
+    package = make_package(package_file_location)
+
+    result = client.put_package(repo, package, distribution)
+
+    if result.succeeded
+        print_version(client, repo, distribution, package_file_location)
+    else
+        response_content = JSON.parse(result.response)
+        if response_content["filename"] == ["has already been taken"]
+            if override
+                override_package(client, repo, package_file_location, distribution, override, attempts)
+            else
+                print_version(client, repo, distribution, package_file_location)
+            end
+        else
+            STDERR.puts result.inspect
+            exit 1
+        end
+    end
+end
+
+def override_package(client, repo, package_file_location, distribution, override, attempts)
+    if attempts == 0
+        STDERR.puts "Unable to override the package. No more attempts left"
+    end
+    distribution_parts = distribution.split("/")
+    distro_name = distribution_parts[0]
+    distro_version = distribution_parts[1]
+    package_file = File.basename(package_file_location)
+
+    ## Delete the package
+    client.delete_package(repo, distro_name, distro_version, package_file)
+
+    ## Recursively try to republish the package
+    publish_package(client, repo, package_file_location, distribution, override, attempts - 1)
+end
+
+if ARGV.length < 1
+  STDERR.puts 'Too few arguments'
+  exit 1
+end
+
 work_dir = ARGV[0]
 
 request = JSON.parse(STDIN.read)
@@ -42,6 +100,7 @@ repo = source.fetch("repo")
 
 distribution_name = params.fetch("distribution_name")
 package_file_glob = params.fetch("package_file_glob")
+override = params.fetch("override", false)
 
 distribution = distributions[distribution_name]
 
@@ -57,28 +116,10 @@ if package_file_location == nil or not File.exists?(package_file_location)
     exit 1
 end
 
-package_file = File.basename(package_file_location)
+client = make_client(username, api_key)
 
-credentials = Packagecloud::Credentials.new(username, api_key)
+publish_package(client, repo, package_file_location, distribution, override, 10)
 
-@client = Packagecloud::Client.new(credentials)
 
-package = Packagecloud::Package.new(:file => package_file_location)
-
-result = @client.put_package(repo, package, distribution)
-
-link = get_link(username, repo, distribution, package_file)
-
-if result.succeeded
-    STDOUT.puts JSON.generate({
-        version: {package: link},
-        metadata: [
-            {name: "Filename", value: package_file},
-            {name: "Package link", value: link}
-        ]})
-else
-    STDERR.puts result.inspect
-    exit 1
-end
 
 
