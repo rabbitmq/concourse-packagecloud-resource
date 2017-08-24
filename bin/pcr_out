@@ -10,7 +10,7 @@ begin
     work_dir = ARGV[0]
     request = JSON.parse(STDIN.read)
 
-    version = PackageCloudResource::Out.main()
+    version = PackageCloudResource::Out.main(work_dir, request)
     STDOUT.puts JSON.generate(version)
     exit
 rescue Exception => e
