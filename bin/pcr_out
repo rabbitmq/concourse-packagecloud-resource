@@ -100,41 +100,40 @@ def override_package(client, repo, package_file_location, distribution, override
     publish_package(client, repo, package_file_location, distribution, override, attempts - 1)
 end
 
-if ARGV.length < 1
-  fail_with("Too few arguments")
+def main()
+    if ARGV.length < 1
+      fail_with("Too few arguments")
+    end
+    work_dir = ARGV[0]
+
+    request = JSON.parse(STDIN.read)
+
+    source = request.fetch("source")
+    params = request.fetch("params")
+
+    username = source.fetch("username")
+    api_key = source.fetch("api_key")
+    repo = source.fetch("repo")
+
+    distribution_name = params.fetch("distribution_name", source.fetch("distribution_name", nil))
+    package_file_glob = params.fetch("package_file_glob")
+    override = params.fetch("override", false)
+
+    distribution = distributions[distribution_name]
+    if distribution_name == nil
+        fail_with("Distribution name should be set either in params or source")
+    end
+    if distribution == nil
+        fail_with("Distribution name not supported: #{distribution_name}")
+    end
+
+    package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
+    if package_file_location == nil or not File.exists?(package_file_location)
+        fail_with("Package file #{package_file_glob} not found in directory #{work_dir}")
+    end
+
+    client = make_client(username, api_key)
+    publish_package(client, repo, package_file_location, distribution, override, 10)
 end
 
-work_dir = ARGV[0]
-
-request = JSON.parse(STDIN.read)
-
-source = request.fetch("source")
-params = request.fetch("params")
-
-username = source.fetch("username")
-api_key = source.fetch("api_key")
-repo = source.fetch("repo")
-
-distribution_name = params.fetch("distribution_name", source.fetch("distribution_name"))
-package_file_glob = params.fetch("package_file_glob")
-override = params.fetch("override", false)
-
-distribution = distributions[distribution_name]
-
-if distribution == nil
-    fail_with("Distribution name not supported: #{distribution_name}")
-end
-
-package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
-
-if package_file_location == nil or not File.exists?(package_file_location)
-    fail_with("Package file #{package_file_glob} not found in directory #{work_dir}")
-end
-
-client = make_client(username, api_key)
-
-publish_package(client, repo, package_file_location, distribution, override, 10)
-
-
-
-
+main()
