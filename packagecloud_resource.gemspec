@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.summary       = "Concourse resource to publish packages to packagecloud"
   spec.authors       = ["Daniil Fedotov"]
 
-  spec.files         = Dir.glob("{bin}/*")
+  spec.files         = Dir.glob("{lib,bin}/*")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
 
   spec.add_dependency "json", "~> 1.8"
