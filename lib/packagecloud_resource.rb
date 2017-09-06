@@ -180,10 +180,10 @@ class << self
         override = params.fetch("override", false)
 
         if distribution == nil
-            fail_with("Distribution name not supported: #{distribution}")
+            fail_with("Distribution name should be set either in params or source")
         end
         if not distributions().include?(distribution)
-            fail_with("Distribution name should be set either in params or source")
+            fail_with("Distribution name not supported: #{distribution}")
         end
 
         package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
