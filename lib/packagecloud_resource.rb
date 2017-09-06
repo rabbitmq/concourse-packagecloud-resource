@@ -14,27 +14,99 @@ class << self
     end
 
     def distributions()
-        {
-            "debian-jessie" => "debian/jessie",
-            "debian-wheezy" => "debian/wheezy",
-            "debian-stretch" => "debian/stretch",
-            "ubuntu-12.04" => "ubuntu/precise",
-            "ubuntu-12.10" => "ubuntu/quantal",
-            "ubuntu-13.04" => "ubuntu/raring",
-            "ubuntu-13.10" => "ubuntu/saucy",
-            "ubuntu-14.04" => "ubuntu/trusty",
-            "ubuntu-14.10" => "ubuntu/utopic",
-            "ubuntu-15.04" => "ubuntu/vivid",
-            "ubuntu-15.10" => "ubuntu/wily",
-            "ubuntu-16.04" => "ubuntu/xenial",
-            "ubuntu-16.10" => "ubuntu/yakkety",
-            "ubuntu-17.04" => "ubuntu/zesty",
-            "centos-6" => "el/6",
-            "fedora-24" => "fedora/24",
-            "fedora-25" => "fedora/25",
-            "fedora-26" => "fedora/26",
-            "centos-7" => "el/7",
-            "opensuse-leap-42.2" => "opensuse/42.2"
+        %w{
+            elementaryos/jupiter
+            elementaryos/luna
+            elementaryos/freya
+
+            sles/11.4
+            sles/12.0
+            sles/12.1
+            sles/12.2
+
+            ubuntu/warty
+            ubuntu/hoary
+            ubuntu/breezy
+            ubuntu/dapper
+            ubuntu/edgy
+            ubuntu/feisty
+            ubuntu/gutsy
+            ubuntu/hardy
+            ubuntu/intrepid
+            ubuntu/jaunty
+            ubuntu/karmic
+            ubuntu/lucid
+            ubuntu/maverick
+            ubuntu/natty
+            ubuntu/oneiric
+            ubuntu/precise
+            ubuntu/quantal
+            ubuntu/raring
+            ubuntu/saucy
+            ubuntu/trusty
+            ubuntu/utopic
+            ubuntu/vivid
+            ubuntu/wily
+            ubuntu/xenial
+            ubuntu/yakkety
+            ubuntu/zesty
+
+            debian/etch
+            debian/lenny
+            debian/squeeze
+            debian/wheezy
+            debian/jessie
+            debian/stretch
+            debian/buster
+
+            raspbian/wheezy
+            raspbian/jessie
+            raspbian/stretch
+            raspbian/buster
+
+            opensuse/13.1
+            opensuse/13.2
+            opensuse/42.1
+            opensuse/42.2
+            opensuse/42.3
+
+            fedora/14
+            fedora/15
+            fedora/16
+            fedora/17
+            fedora/18
+            fedora/19
+            fedora/20
+            fedora/21
+            fedora/22
+            fedora/23
+            fedora/24
+            fedora/25
+            fedora/26
+
+            linuxmint/petra
+            linuxmint/qiana
+            linuxmint/rebecca
+            linuxmint/rafaela
+            linuxmint/rosa
+            linuxmint/sarah
+            linuxmint/serena
+            linuxmint/sonya
+
+            poky/jethro
+            poky/krogoth
+
+            scientific/5
+            scientific/6
+            scientific/7
+
+            ol/5
+            ol/6
+            ol/7
+
+            el/5
+            el/6
+            el/7
         }
     end
 
@@ -103,16 +175,15 @@ class << self
         api_key = source.fetch("api_key")
         repo = source.fetch("repo")
 
-        distribution_name = params.fetch("distribution_name", source.fetch("distribution_name", nil))
+        distribution = params.fetch("distribution_name", source.fetch("distribution_name", nil))
         package_file_glob = params.fetch("package_file_glob")
         override = params.fetch("override", false)
 
-        distribution = distributions[distribution_name]
-        if distribution_name == nil
-            fail_with("Distribution name should be set either in params or source")
-        end
         if distribution == nil
-            fail_with("Distribution name not supported: #{distribution_name}")
+            fail_with("Distribution name not supported: #{distribution}")
+        end
+        if not distributions().include?(distribution)
+            fail_with("Distribution name should be set either in params or source")
         end
 
         package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first

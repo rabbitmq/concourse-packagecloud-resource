@@ -73,7 +73,7 @@ describe "Out Command" do
         let(:config) { {"source" => {"username" => "test_username",
                                      "api_key" => "valid_key",
                                      "repo" => "test_repo"},
-                        "params" => {"distribution_name" => "debian-jessie",
+                        "params" => {"distribution_name" => "debian/jessie",
                                      "package_file_glob" => "*.deb"}} }
         it "publishes a package" do
             in_dir do |working_dir|
@@ -127,7 +127,7 @@ describe "Out Command" do
         let(:config) { {"source" => {"username" => "test_username",
                                      "api_key" => "valid_key",
                                      "repo" => "test_repo"},
-                        "params" => {"distribution_name" => "debian-jessie",
+                        "params" => {"distribution_name" => "debian/jessie",
                                      "package_file_glob" => "*.deb",
                                      "override" => true}} }
         it "publishes a package" do
@@ -181,7 +181,7 @@ describe "Out Command" do
         let(:config) { {"source" => {"username" => "test_username",
                                      "api_key" => "valid_key",
                                      "repo" => "test_repo",
-                                     "distribution_name" => "debian-jessie"},
+                                     "distribution_name" => "debian/jessie"},
                         "params" => {"package_file_glob" => "*.deb",
                                      "override" => true}} }
         it "publishes a package" do
@@ -235,7 +235,7 @@ describe "Out Command" do
         let(:valid_config) { {"source" => {"username" => "test_username",
                                      "api_key" => "valid_key",
                                      "repo" => "test_repo",
-                                     "distribution_name" => "debian-jessie"},
+                                     "distribution_name" => "debian/jessie"},
                         "params" => {"package_file_glob" => "*.deb",
                                      "override" => true}} }
         it "fails if username or api_key is invalid" do

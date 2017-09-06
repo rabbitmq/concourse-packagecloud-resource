@@ -1,6 +1,7 @@
 # Concourse packagecloud resource
 
 This is a concourse resource to publish package cloud packages.
+**Java, Ruby and Python packages are not supported yet**
 
 ## Building
 
@@ -22,28 +23,9 @@ which are used as `check`, `in` and `out` commands for the resource.
 - repo: Package cloud repo name
 - distribution_name: *Optional* a name of distribution. Can be overriden by the same configuration in `out` params.
 
-Distribution name can be one of:
+Distribution name can be one of distribution names described in [the packagecloud docs](https://packagecloud.io/docs#anchor-elementaryos)
 
-- debian-jessie
-- debian-wheezy
-- debian-stretch
-- ubuntu-12.04
-- ubuntu-12.10
-- ubuntu-13.04
-- ubuntu-13.10
-- ubuntu-14.04
-- ubuntu-14.10
-- ubuntu-15.04
-- ubuntu-15.10
-- ubuntu-16.04
-- ubuntu-16.10
-- ubuntu-17.04
-- centos-6
-- fedora-24
-- fedora-25
-- fedora-26
-- centos-7
-- opensuse-leap-42.2
+**Please note, that ruby gem, java and python distributions are not supported**
 
 ### Behaviour
 
