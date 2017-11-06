@@ -33,13 +33,17 @@ Distribution name can be one of distribution names described in [the packageclou
 
 #### `in`: Does nothing.
 
-#### `out`: Publishes a package to package cloud
+#### `out`: Publishes a package to package cloud or deletes packages by version pattern
 
 
 ##### Parameters
 
-- package_file_glob: a glob pattern for the package file.
+
 - distribution_name: *Optional* a name of distribution. Overrides the source configuration.
+- package_file_glob: *Optional* a glob pattern for the package file.
+- delete_version: *Optional* version pattern to delete. If set, will delete packages with matching version.
+
+Either `package_file_glob` or `delete_version` should be set.
 
 
 

@@ -33,7 +33,7 @@ class MockClient
         if @packages[arg_hash]
             MockResult.new(false, '{"filename":["has already been taken"]}')
         else
-            @packages[arg_hash] = true
+            @packages[arg_hash] = {repo: repo, package_file: package_file, distribution: distribution}
             counter = @packages_published[arg_hash] || 0
             @packages_published[arg_hash] = counter + 1
             MockResult.new(true, '{}')
@@ -43,7 +43,22 @@ class MockClient
         arg_hash = [repo, package_file, "#{distro_name}/#{distro_version}"].hash
         counter = @packages_deleted[arg_hash] || 0
         @packages_deleted[arg_hash] = counter + 1
-        @packages[arg_hash] = false
+        @packages.delete(arg_hash)
+    end
+    def list_packages(repo)
+        packages = @packages.map do |k, package|
+            {"repo" => package[:repo],
+             "filename" => package[:package_file],
+             "distro_version" => package[:distribution],
+             "version" => version(package[:package_file])}
+        end.select do |package|
+            package["repo"] == repo
+        end
+        MockResult.new(true, packages)
+    end
+
+    def version(package_name)
+        /some_(.*)\.deb/.match(package_name)[1]
     end
 end
 
@@ -119,6 +134,64 @@ describe "Out Command" do
                 arg_hash = ["test_repo", filename, "debian/jessie"].hash
                 expect(client.packages_published[arg_hash]).to eq(1)
                 expect(client.packages_deleted[arg_hash]).to eq(nil)
+            end
+        end
+
+        context "if both package_file_glob and delete_version set" do
+            let(:config) { {"source" => {"username" => "test_username",
+                                     "api_key" => "valid_key",
+                                     "repo" => "test_repo"},
+                        "params" => {"distribution_name" => "debian/jessie",
+                                     "package_file_glob" => "*.deb",
+                                     "delete_version" => ".*"}} }
+            it "fails" do
+                in_dir do |working_dir|
+                    out_dir = File.join(working_dir, "path")
+                    Dir.mkdir(out_dir)
+                    filename = "some.deb"
+                    File.open(File.join(out_dir, filename), "w") {}
+                    expect {PackageCloudResource::Out.main(out_dir, config)}.to raise_error("package_file_glob and delete_version should not be set in the same time")
+                end
+            end
+        end
+
+        it "clean up package versions if delete_version is provided" do
+            in_dir do |working_dir|
+                out_dir = File.join(working_dir, "path")
+                Dir.mkdir(out_dir)
+                filename = "some_3.6.13~alpha.39-1_all.deb"
+                File.open(File.join(out_dir, filename), "w") {}
+                result = PackageCloudResource::Out.main(out_dir, config)
+                expect(result).to include(:version)
+                expect(result).to include(:metadata)
+
+                File.delete(File.join(out_dir, filename))
+
+                filename1 = "some_3.6.14~alpha.39-1_all.deb"
+                File.open(File.join(out_dir, filename1), "w") {}
+                result = PackageCloudResource::Out.main(out_dir, config)
+                expect(result).to include(:version)
+                expect(result).to include(:metadata)
+
+                expect(client.packages_published.length).to eq(2)
+                expect(client.packages_deleted.length).to eq(0)
+
+                config["params"] = {"distribution_name" => "debian/jessie",
+                                    "delete_version" => "^3\.6\.14"}
+
+                PackageCloudResource::Out.main(out_dir, config)
+
+                expect(client.packages_published.length).to eq(2)
+
+                arg_hash = ["test_repo", filename1, "debian/jessie"].hash
+                expect(client.packages_deleted[arg_hash]).to eq(1)
+                expect(client.packages.length).to eq(1)
+
+                expected = [{"repo" => "test_repo",
+                             "filename" => filename,
+                             "distro_version" => "debian/jessie",
+                             "version" => "3.6.13~alpha.39-1_all"}]
+                expect(client.list_packages('test_repo').response).to eq(expected)
             end
         end
     end

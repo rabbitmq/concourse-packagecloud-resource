@@ -155,16 +155,42 @@ class << self
         if attempts == 0
             fail_with("Unable to override the package. No more attempts left")
         end
-        distribution_parts = distribution.split("/")
-        distro_name = distribution_parts[0]
-        distro_version = distribution_parts[1]
         package_file = File.basename(package_file_location)
 
-        ## Delete the package
-        client.delete_package(repo, distro_name, distro_version, package_file)
+        delete_package(client, repo, distribution, package_file)
 
         ## Recursively try to republish the package
         publish_package(client, repo, package_file_location, distribution, override, attempts - 1)
+    end
+
+    def delete_package(client, repo, distribution, package_file)
+        distribution_parts = distribution.split("/")
+        distro_name = distribution_parts[0]
+        distro_version = distribution_parts[1]
+        ## Delete the package
+        client.delete_package(repo, distro_name, distro_version, package_file)
+    end
+
+    def match_packages(client, repo, distribution, delete_version)
+        version_regexp = Regexp.compile(delete_version)
+        result = client.list_packages(repo)
+        if result.succeeded != true
+            fail_with("Failed to load packages for repo #{repo}")
+        else
+            packages = result.response
+            packages.select do |package|
+                (package['distro_version'] == distribution) && (version_regexp.match(package['version']) != nil)
+            end.map do |package|
+                package['filename']
+            end
+        end
+    end
+
+    def delete_versions(client, repo, distribution, delete_version)
+        matching_packages = match_packages(client, repo, distribution, delete_version)
+        matching_packages.each do |package_file|
+            delete_package(client, repo, distribution, package_file)
+        end
     end
 
     def main(work_dir, request)
@@ -176,8 +202,10 @@ class << self
         repo = source.fetch("repo")
 
         distribution = params.fetch("distribution_name", source.fetch("distribution_name", nil))
-        package_file_glob = params.fetch("package_file_glob")
+        package_file_glob = params.fetch("package_file_glob", nil)
         override = params.fetch("override", false)
+
+        delete_version = params.fetch("delete_version", nil)
 
         if distribution == nil
             fail_with("Distribution name should be set either in params or source")
@@ -186,13 +214,24 @@ class << self
             fail_with("Distribution name not supported: #{distribution}")
         end
 
-        package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
-        if package_file_location == nil or not File.exists?(package_file_location)
-            fail_with("Package file #{package_file_glob} not found in directory #{work_dir}")
-        end
+        if package_file_glob == nil and delete_version == nil
+            fail_with("Either package_file_glob or delete_version should be set")
+        elsif package_file_glob != nil and delete_version != nil
+            fail_with("package_file_glob and delete_version should not be set in the same time")
+        elsif package_file_glob != nil and delete_version == nil
+            # Publish package
+            package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
+            if package_file_location == nil or not File.exists?(package_file_location)
+                fail_with("Package file #{package_file_glob} not found in directory #{work_dir}")
+            end
 
-        client = make_client(username, api_key)
-        publish_package(client, repo, package_file_location, distribution, override, 10)
+            client = make_client(username, api_key)
+            publish_package(client, repo, package_file_location, distribution, override, 10)
+        else
+            # Delete versions
+            client = make_client(username, api_key)
+            delete_versions(client, repo, distribution, delete_version)
+        end
     end
 end
 end
