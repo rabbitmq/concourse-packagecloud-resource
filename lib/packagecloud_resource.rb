@@ -231,6 +231,10 @@ class << self
             # Delete versions
             client = make_client(username, api_key)
             delete_versions(client, repo, distribution, delete_version)
+            {
+                version: {"deleted" => "<DELETED>"},
+                metadata: []
+            }
         end
     end
 end

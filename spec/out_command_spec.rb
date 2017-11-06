@@ -63,9 +63,6 @@ class MockClient
 end
 
 describe "Out Command" do
-    # let(:out_command) {
-    #     class_double(PackageCloudResource::Out)
-    # }
     let(:client) {MockClient.new()}
     def in_dir
         dir = Dir.mktmpdir
@@ -81,7 +78,6 @@ describe "Out Command" do
             client.auth(username, api_key)
             client
         end
-        # allow(out_command).to receive(:main).and_call_original
     end
 
     context "with valid repo input" do
@@ -179,7 +175,8 @@ describe "Out Command" do
                 config["params"] = {"distribution_name" => "debian/jessie",
                                     "delete_version" => "^3\.6\.14"}
 
-                PackageCloudResource::Out.main(out_dir, config)
+                result = PackageCloudResource::Out.main(out_dir, config)
+                expect(result[:version]).to eq({"deleted" => "<DELETED>"})
 
                 expect(client.packages_published.length).to eq(2)
 
