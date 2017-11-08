@@ -57,8 +57,26 @@ class MockClient
         MockResult.new(true, packages)
     end
 
+    def list_dist_packages(repo, distribution)
+        packages = @packages.map do |k, package|
+            {"repo" => package[:repo],
+             "filename" => package[:package_file],
+             "distro_version" => package[:distribution],
+             "version" => version(package[:package_file])}
+        end.select do |package|
+            package["repo"] == repo
+        end.select do |package|
+            package["distro_version"] == distribution
+        end
+        MockResult.new(true, packages)
+    end
+
     def version(package_name)
         /some_(.*)\.deb/.match(package_name)[1]
+    end
+
+    def repository(repo)
+        MockResult.new(true, [])
     end
 end
 

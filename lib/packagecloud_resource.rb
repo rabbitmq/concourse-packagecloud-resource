@@ -1,5 +1,6 @@
 require 'packagecloud'
-require 'json'
+require 'multi_json'
+require 'packagecloud/result'
 
 module PackageCloudResource
 class Out
@@ -138,7 +139,7 @@ class << self
         if result.succeeded
             gen_version(client, repo, distribution, package_file_location)
         else
-            response_content = JSON.parse(result.response)
+            response_content = MultiJson.load(result.response)
             if response_content["filename"] == ["has already been taken"]
                 if override
                     override_package(client, repo, package_file_location, distribution, override, attempts)
@@ -173,15 +174,13 @@ class << self
 
     def match_packages(client, repo, distribution, delete_version)
         version_regexp = Regexp.compile(delete_version)
-        result = client.list_packages(repo)
+        result = client.list_dist_packages(repo, distribution)
         if result.succeeded != true
             fail_with("Failed to load packages for repo #{repo}")
         else
             $stderr.puts "Version regex #{delete_version}"
             packages = result.response
             packages.select do |package|
-                package['distro_version'] == distribution
-            end.select do |package|
                 if version_regexp.match(package['version']) == nil
                     $stderr.puts " Keeping version #{package['version']}"
                     false
@@ -247,5 +246,45 @@ class << self
         end
     end
 end
+end
+end
+
+module Packagecloud
+class Client
+
+    def list_dist_packages(repo, distribution)
+        assert_valid_repo_name(repo)
+        get_all("/api/v1/repos/#{username}/#{repo}/search.json?dist=#{distribution}&per_page=100", 1)
+    end
+
+    def get_all(url, page)
+        page_url = "#{url}&page=#{page}"
+        excon_result = request(page_url, :get)
+        if excon_result.status == 200
+            page_data = MultiJson.load(excon_result.body)
+            total = excon_result.headers["Total"].to_i
+            per_page = excon_result.headers["Per-Page"].to_i
+            if total > per_page && page_data.length > 0
+                other_pages = get_all(url, page+1)
+                if other_pages.succeeded == true
+                    result(true, page_data + other_pages.response)
+                else
+                    other_pages
+                end
+            else
+                result(true, page_data)
+            end
+        else
+            result(false, excon_result.body)
+        end
+    end
+
+    def result(succeeded, response)
+        result = Result.new
+        result.response = response
+        result.succeeded = succeeded
+        result
+    end
+
 end
 end
