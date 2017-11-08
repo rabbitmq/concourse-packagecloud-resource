@@ -177,9 +177,18 @@ class << self
         if result.succeeded != true
             fail_with("Failed to load packages for repo #{repo}")
         else
+            puts "Version regex #{delete_version}"
             packages = result.response
             packages.select do |package|
-                (package['distro_version'] == distribution) && (version_regexp.match(package['version']) != nil)
+                package['distro_version'] == distribution
+            end.select do |package|
+                if version_regexp.match(package['version']) == nil
+                    puts " Keeping version #{package['version']}"
+                    false
+                else
+                    puts "Removing version #{package['version']}"
+                    true
+                end
             end.map do |package|
                 package['filename']
             end
