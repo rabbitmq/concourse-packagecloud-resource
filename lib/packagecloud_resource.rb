@@ -51,6 +51,7 @@ class << self
             ubuntu/xenial
             ubuntu/yakkety
             ubuntu/zesty
+            ubuntu/artful
 
             debian/etch
             debian/lenny
