@@ -15,6 +15,8 @@ class << self
     end
 
     def distributions()
+        # NOTE: OpenSUSE 15.0 was released *after* 42.3. That's why it's
+        # sorted after in this list.
         %w{
             elementaryos/jupiter
             elementaryos/luna
@@ -52,6 +54,7 @@ class << self
             ubuntu/yakkety
             ubuntu/zesty
             ubuntu/artful
+            ubuntu/bionic
 
             debian/etch
             debian/lenny
@@ -71,6 +74,7 @@ class << self
             opensuse/42.1
             opensuse/42.2
             opensuse/42.3
+            opensuse/15.0
 
             fedora/14
             fedora/15
@@ -85,6 +89,8 @@ class << self
             fedora/24
             fedora/25
             fedora/26
+            fedora/27
+            fedora/28
 
             linuxmint/petra
             linuxmint/qiana
