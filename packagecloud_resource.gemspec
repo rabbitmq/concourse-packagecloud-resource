@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "packagecloud_resource"
-  spec.version       = "0.0.1"
+  spec.version       = "0.9.0"
   spec.summary       = "Concourse resource to publish packages to packagecloud"
   spec.authors       = ["Daniil Fedotov"]
 
