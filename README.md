@@ -11,7 +11,7 @@ This resource is a ruby gem, which can be build via
 gem build packagecloud_resource.gemspec
 ```
 
-The gem contains three executables `pcr_check`, `pcf_in` and `pcf_out`,
+The gem contains three executables: `pcr_check`, `pcr_in` and `pcr_out`,
 which are used as `check`, `in` and `out` commands for the resource.
 
 ## Usage
