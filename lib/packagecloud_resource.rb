@@ -229,11 +229,11 @@ class << self
             fail_with("Distribution name not supported: #{distribution}")
         end
 
-        if package_file_glob == nil and delete_version == nil
+        if package_file_glob.nil? && delete_version.nil?
             fail_with("Either package_file_glob or delete_version should be set")
-        elsif package_file_glob != nil and delete_version != nil
+        elsif !package_file_glob.nil? && !delete_version.nil?
             fail_with("package_file_glob and delete_version should not be set in the same time")
-        elsif package_file_glob != nil and delete_version == nil
+        elsif !package_file_glob.nil? && delete_version.nil?
             # Publish package
             package_file_location = Dir.glob([File.join(work_dir, package_file_glob)]).first
             if package_file_location == nil or not File.exists?(package_file_location)
