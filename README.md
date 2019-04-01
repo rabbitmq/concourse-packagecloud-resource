@@ -81,4 +81,4 @@ Either `package_file_glob` or `delete_version` should be set.
 
 
 ## Related
-[Concourse bintray resource](https://github.com/rabbitmq/concourse-bintray-resources)
+[Concourse Bintray resource](https://github.com/rabbitmq/concourse-bintray-resources)
