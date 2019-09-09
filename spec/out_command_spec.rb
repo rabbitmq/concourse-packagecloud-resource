@@ -320,12 +320,14 @@ describe "Out Command" do
     end
 
     context "with invalid config" do
-        let(:valid_config) { {"source" => {"username" => "test_username",
-                                     "api_key" => "valid_key",
-                                     "repo" => "test_repo",
-                                     "distribution_name" => "debian/jessie"},
-                        "params" => {"package_file_glob" => "*.deb",
-                                     "override" => true}} }
+        let(:valid_config) do
+          {"source" => {"username" => "test_username",
+                                       "api_key" => "valid_key",
+                                       "repo" => "test_repo",
+                                       "distribution_name" => "debian/jessie"},
+                          "params" => {"package_file_glob" => "*.deb",
+                                       "override" => true}}
+        end
         it "fails if username or api_key is invalid" do
             in_dir do |working_dir|
                 out_dir = File.join(working_dir, "path")
@@ -341,18 +343,7 @@ describe "Out Command" do
                 expect {PackageCloudResource::Out.main(out_dir, config)}.to raise_error("failed")
             end
         end
-        it "fails if distribution name is invalid" do
-            in_dir do |working_dir|
-                out_dir = File.join(working_dir, "path")
-                Dir.mkdir(out_dir)
-                filename = "some.deb"
-                File.open(File.join(out_dir, filename), "w") {}
 
-                config = valid_config
-                config["source"]["distribution_name"] = "devian-whoozy"
-                expect {PackageCloudResource::Out.main(out_dir, config)}.to raise_error("Distribution name not supported: devian-whoozy")
-            end
-        end
         it "fails if file not found" do
             in_dir do |working_dir|
                 out_dir = File.join(working_dir, "path")
@@ -365,6 +356,7 @@ describe "Out Command" do
                 expect {PackageCloudResource::Out.main(out_dir, config)}.to raise_error("Package file non_existent_file not found in directory #{out_dir}")
             end
         end
+
         it "fails if no distribution_name set missing" do
             in_dir do |working_dir|
                 out_dir = File.join(working_dir, "path")
@@ -376,6 +368,7 @@ describe "Out Command" do
                 expect {PackageCloudResource::Out.main(out_dir, config)}.to raise_error("Distribution name should be set either in params or source")
             end
         end
+
         it "fails if required parameter is missing" do
             in_dir do |working_dir|
                 out_dir = File.join(working_dir, "path")

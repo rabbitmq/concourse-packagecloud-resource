@@ -14,110 +14,6 @@ class << self
         "https://packagecloud.io/#{username}/#{repo}/packages/#{distribution}/#{package_file}"
     end
 
-    def distributions()
-        # NOTE: OpenSUSE 15.0 was released *after* 42.3. That's why it's
-        # sorted after in this list.
-        %w{
-            elementaryos/jupiter
-            elementaryos/luna
-            elementaryos/freya
-
-            sles/11.4
-            sles/12.0
-            sles/12.1
-            sles/12.2
-
-            ubuntu/warty
-            ubuntu/hoary
-            ubuntu/breezy
-            ubuntu/dapper
-            ubuntu/edgy
-            ubuntu/feisty
-            ubuntu/gutsy
-            ubuntu/hardy
-            ubuntu/intrepid
-            ubuntu/jaunty
-            ubuntu/karmic
-            ubuntu/lucid
-            ubuntu/maverick
-            ubuntu/natty
-            ubuntu/oneiric
-            ubuntu/precise
-            ubuntu/quantal
-            ubuntu/raring
-            ubuntu/saucy
-            ubuntu/trusty
-            ubuntu/utopic
-            ubuntu/vivid
-            ubuntu/wily
-            ubuntu/xenial
-            ubuntu/yakkety
-            ubuntu/zesty
-            ubuntu/artful
-            ubuntu/bionic
-
-            debian/etch
-            debian/lenny
-            debian/squeeze
-            debian/wheezy
-            debian/jessie
-            debian/stretch
-            debian/buster
-
-            raspbian/wheezy
-            raspbian/jessie
-            raspbian/stretch
-            raspbian/buster
-
-            opensuse/13.1
-            opensuse/13.2
-            opensuse/42.1
-            opensuse/42.2
-            opensuse/42.3
-            opensuse/15.0
-
-            fedora/14
-            fedora/15
-            fedora/16
-            fedora/17
-            fedora/18
-            fedora/19
-            fedora/20
-            fedora/21
-            fedora/22
-            fedora/23
-            fedora/24
-            fedora/25
-            fedora/26
-            fedora/27
-            fedora/28
-
-            linuxmint/petra
-            linuxmint/qiana
-            linuxmint/rebecca
-            linuxmint/rafaela
-            linuxmint/rosa
-            linuxmint/sarah
-            linuxmint/serena
-            linuxmint/sonya
-
-            poky/jethro
-            poky/krogoth
-
-            scientific/5
-            scientific/6
-            scientific/7
-
-            ol/5
-            ol/6
-            ol/7
-
-            el/5
-            el/6
-            el/7
-        }
-    end
-
     def make_client(username, api_key)
         credentials = Packagecloud::Credentials.new(username, api_key)
         Packagecloud::Client.new(credentials)
@@ -222,11 +118,8 @@ class << self
 
         delete_version = params.fetch("delete_version", nil)
 
-        if distribution == nil
+        if distribution.nil?
             fail_with("Distribution name should be set either in params or source")
-        end
-        if not distributions().include?(distribution)
-            fail_with("Distribution name not supported: #{distribution}")
         end
 
         if package_file_glob.nil? && delete_version.nil?
