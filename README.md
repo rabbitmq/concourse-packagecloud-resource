@@ -1,7 +1,13 @@
-# Concourse packagecloud resource
+# Concourse PackageCloud resource
 
-This is a concourse resource to publish package cloud packages.
-**Java, Ruby and Python packages are not supported yet**
+This is a Concourse resource to publish Debian and RPM packages to PackageCloud.
+
+## Project Maturity
+
+This resource is used in production by Team RabbitMQ to distribute open source RabbitMQ packages
+(Debian and RPM) to PackageCloud.
+
+**Java, Ruby and Python package types are not supported at the moment**
 
 ## Installing
 
